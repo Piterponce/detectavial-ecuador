@@ -353,28 +353,20 @@ if "📹" in modo:
         st.markdown('<div class="camera-box-container" style="text-align:center; padding:3rem;"><h1 style="color:#fff;">📹</h1><h3 style="color:#fff;">En Espera</h3></div>', unsafe_allow_html=True)
         renderizar_panel_verificacion([])
     else:
-        frame_placeholder = st.empty()
-        hud_placeholder = st.empty()
+        foto_radar = st.camera_input("📷 Radar Web: Permitir cámara y escanear")
         
-        cap = cv2.VideoCapture(0, cv2.CAP_DSHOW)
-        if not cap.isOpened(): cap = cv2.VideoCapture(0)
-
-        if cap.isOpened():
-            try:
-                while cap.isOpened() and cam_activa:
-                    ret, frame = cap.read()
-                    if not ret: break
-                    results = modelo.predict(source=frame, conf=confianza, verbose=False)
-                    frame_anotado, dets = dibujar_detecciones(frame, results)
-                    frame_rgb = cv2.cvtColor(frame_anotado, cv2.COLOR_BGR2RGB)
-                    
-                    frame_placeholder.image(frame_rgb, use_container_width=True)
-                    with hud_placeholder.container(): renderizar_panel_verificacion(dets)
-                    time.sleep(0.015)
-            finally:
-                cap.release()
-        else:
-            st.error("⚠️ No se pudo abrir la cámara local.")
+        if foto_radar is not None:
+            # Convertir imagen del navegador para OpenCV
+            img_np = np.array(Image.open(foto_radar).convert("RGB"))
+            frame_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
+            
+            # Procesar con IA
+            results = modelo.predict(source=frame_bgr, conf=confianza, verbose=False)
+            frame_anotado, dets = dibujar_detecciones(frame_bgr, results)
+            
+            # Mostrar resultado y HUD en pantalla
+            st.image(cv2.cvtColor(frame_anotado, cv2.COLOR_BGR2RGB), use_container_width=True)
+            renderizar_panel_verificacion(dets)
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  MODO 2 Y 3: FOTOS Y SUBIDA
