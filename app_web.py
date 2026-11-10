@@ -302,54 +302,54 @@ def renderizar_panel_verificacion(detecciones: list[dict]):
     </div>
     """, unsafe_allow_html=True)
 
-# ══════════════════════════════════════════════════════════════════════════════
-#  HERO & BARRA LATERAL
-# ══════════════════════════════════════════════════════════════════════════════
-st.markdown("""
-<div class="hero-wrapper">
-    <div class="hero-title">DetectaVial ADAS</div>
-    <p class="hero-subtitle">Visor inteligente con cálculo de distancia en tiempo real (Normativa MTOP / INEN)</p>
-</div>
-""", unsafe_allow_html=True)
-
-with st.sidebar:
-    st.markdown('<div style="font-weight:800; font-size:1.15rem; margin-bottom:1rem;">🎛️ Modos de Inspección</div>', unsafe_allow_html=True)
-    modo = st.radio("Entrada", ["📹 Cámara en Vivo (Local)", "📸 Foto desde Celular/PC", "🖼️ Subir Imagen"], label_visibility="collapsed")
-    confianza = st.slider("Sensibilidad", 0.10, 0.95, 0.35, 0.05)
-    st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
+    # ══════════════════════════════════════════════════════════════════════════════
+    #  HERO & BARRA LATERAL
+    # ══════════════════════════════════════════════════════════════════════════════
+    st.markdown("""
+    <div class="hero-wrapper">
+        <div class="hero-title">DetectaVial ADAS</div>
+        <p class="hero-subtitle">Visor inteligente con cálculo de distancia en tiempo real (Normativa MTOP / INEN)</p>
+    </div>
+    """, unsafe_allow_html=True)
     
-    if Path(MODEL_PATH).exists():
-        st.markdown("""
-        <div style="background: rgba(255,255,255,0.7); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
-            <div style="position: relative; width: 12px; height: 12px;">
-                <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background: #10b981; animation: pulseGlow 2s infinite;"></div>
-                <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background: #10b981;"></div>
+    with st.sidebar:
+        st.markdown('<div style="font-weight:800; font-size:1.15rem; margin-bottom:1rem;">🎛️ Modos de Inspección</div>', unsafe_allow_html=True)
+        modo = st.radio("Entrada", ["📹 Cámara en Vivo (Local)", "📸 Foto desde Celular/PC", "🖼️ Subir Imagen"], label_visibility="collapsed")
+        confianza = st.slider("Sensibilidad", 0.10, 0.95, 0.35, 0.05)
+        st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
+        
+        if Path(MODEL_PATH).exists():
+            st.markdown("""
+            <div style="background: rgba(255,255,255,0.7); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
+                <div style="position: relative; width: 12px; height: 12px;">
+                    <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background: #10b981; animation: pulseGlow 2s infinite;"></div>
+                    <div style="position: absolute; width: 100%; height: 100%; border-radius: 50%; background: #10b981;"></div>
+                </div>
+                <div style="font-weight: 700; color: #065f46; font-size: 0.95rem; letter-spacing: -0.2px;">IA Lista y Activa</div>
             </div>
-            <div style="font-weight: 700; color: #065f46; font-size: 0.95rem; letter-spacing: -0.2px;">IA Lista y Activa</div>
-        </div>
-        <style>
-        @keyframes pulseGlow { 0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); } 70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
-        </style>
-        """, unsafe_allow_html=True)
-    else:
-        st.error(f"❌ No se encontró '{MODEL_PATH}'")
-
-modelo = cargar_modelo(MODEL_PATH)
-
-st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
-    st.markdown('<div style="font-weight:800; font-size:1.15rem; margin-bottom:1rem;">📥 Exportar Datos</div>', unsafe_allow_html=True)
+            <style>
+            @keyframes pulseGlow { 0% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.6); } 70% { transform: scale(1.1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); } 100% { transform: scale(0.9); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); } }
+            </style>
+            """, unsafe_allow_html=True)
+        else:
+            st.error(f"❌ No se encontró '{MODEL_PATH}'")
     
-    if os.path.exists("senales_por_agregar.csv"):
-        with open("senales_por_agregar.csv", "rb") as f:
-            st.download_button(
-                label="Descargar Señales Nuevas (CSV)",
-                data=f,
-                file_name="senales_nuevas.csv",
-                mime="text/csv",
-                use_container_width=True
-            )
-    else:
-        st.info("Aún no hay señales nuevas detectadas en esta sesión.")
+    modelo = cargar_modelo(MODEL_PATH)
+    
+    st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
+        st.markdown('<div style="font-weight:800; font-size:1.15rem; margin-bottom:1rem;">📥 Exportar Datos</div>', unsafe_allow_html=True)
+        
+        if os.path.exists("senales_por_agregar.csv"):
+            with open("senales_por_agregar.csv", "rb") as f:
+                st.download_button(
+                    label="Descargar Señales Nuevas (CSV)",
+                    data=f,
+                    file_name="senales_nuevas.csv",
+                    mime="text/csv",
+                    use_container_width=True
+                )
+        else:
+            st.info("Aún no hay señales nuevas detectadas en esta sesión.")
         
 # ══════════════════════════════════════════════════════════════════════════════
 #  MODO 1: CÁMARA EN VIVO (FLUJO CONTINUO WEBRTC)
