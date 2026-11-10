@@ -345,30 +345,41 @@ if "📹" in modo:
     st.caption("Transmisión en tiempo real. La IA dibujará los cuadros y la distancia directamente sobre el video.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    class VideoProcessor:
-        def recv(self, frame):
-            img = frame.to_ndarray(format="bgr24")
-            if modelo is not None:
-                results = modelo.predict(source=img, conf=confianza, verbose=False)
-                img_anotada, dets = dibujar_detecciones(img, results)
-            else:
-                img_anotada = img
-            return av.VideoFrame.from_ndarray(img_anotada, format="bgr24")
+    def procesar_frame(frame: av.VideoFrame) -> av.VideoFrame:
+        img = frame.to_ndarray(format="bgr24")
+        if modelo is not None:
+            results = modelo.predict(source=img, conf=confianza, verbose=False)
+            img_anotada, _ = dibujar_detecciones(img, results)
+        else:
+            img_anotada = img
+        return av.VideoFrame.from_ndarray(img_anotada, format="bgr24")
 
-    # Configuración de red para evitar cortes en la nube
-    rtc_config = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
+    # 🔥 CONFIGURACIÓN STUN/TURN (PUENTE OBLIGATORIO PARA CELULARES Y NUBE) 🔥
+    rtc_config = RTCConfiguration({
+        "iceServers": [
+            {"urls": ["stun:stun.l.google.com:19302"]},
+            {
+                "urls": [
+                    "turn:openrelay.metered.ca:80",
+                    "turn:openrelay.metered.ca:443"
+                ],
+                "username": "openrelayproject",
+                "credential": "openrelayproject"
+            }
+        ]
+    })
 
     st.markdown('<div class="camera-box-container">', unsafe_allow_html=True)
     webrtc_streamer(
         key="radar-vivo",
         mode=WebRtcMode.SENDRECV,
         rtc_configuration=rtc_config,
-        video_processor_factory=VideoProcessor,
+        video_frame_callback=procesar_frame,
         media_stream_constraints={"video": True, "audio": False},
         async_processing=True
     )
     st.markdown('</div>', unsafe_allow_html=True)
-
+    
 # ══════════════════════════════════════════════════════════════════════════════
 #  MODO 2 Y 3: FOTOS Y SUBIDA
 # ══════════════════════════════════════════════════════════════════════════════
