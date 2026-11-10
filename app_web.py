@@ -336,6 +336,21 @@ with st.sidebar:
 
 modelo = cargar_modelo(MODEL_PATH)
 
+st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
+    st.markdown('<div style="font-weight:800; font-size:1.15rem; margin-bottom:1rem;">📥 Exportar Datos</div>', unsafe_allow_html=True)
+    
+    if os.path.exists("senales_por_agregar.csv"):
+        with open("senales_por_agregar.csv", "rb") as f:
+            st.download_button(
+                label="Descargar Señales Nuevas (CSV)",
+                data=f,
+                file_name="senales_nuevas.csv",
+                mime="text/csv",
+                use_container_width=True
+            )
+    else:
+        st.info("Aún no hay señales nuevas detectadas en esta sesión.")
+        
 # ══════════════════════════════════════════════════════════════════════════════
 #  MODO 1: CÁMARA EN VIVO (FLUJO CONTINUO WEBRTC)
 # ══════════════════════════════════════════════════════════════════════════════
