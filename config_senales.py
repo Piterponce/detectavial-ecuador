@@ -45,7 +45,7 @@ TRADUCTOR: dict[str, str] = {
     "22":                                "Pare",
     "71":                                "Pare",
     # [Agrega aquí tus nuevos IDs numéricos]
-    "39":             "Aproximación a Redondel,Ceda el paso",
+    "39":             "Aproximación a Redondel",
     "39":             "Ceda el paso",
     "21":             "Doble via",
     "52":"Doble via",
