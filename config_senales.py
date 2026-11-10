@@ -52,7 +52,7 @@ TRADUCTOR: dict[str, str] = {
     "For state of the art Computer Vision training notebooks you can use with this dataset-": "Ceda el paso",
     "Traffic-sign are annotated in YOLOv8 format.": "Reductor de velocidad",
     "Roboflow is an end-to-end computer vision platform that helps you": "Zona escolar",
-    "Random Gaussian blur of between 0 and 3.25 pixels": "Puente angosto",
+    "- Random Gaussian blur of between 0 and 3.25 pixels": "Puente angosto",
     "traffic sign - v1 2023-12-23 2-51pm": "Prohinido el paso",
     "traffic sign - v1 2023-12-23 2-51pm": "Prohinido el paso",
     "traffic sign - v1 2023-12-23 2-51pm": "Prohinido el paso",
