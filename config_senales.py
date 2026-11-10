@@ -48,6 +48,7 @@ TRADUCTOR: dict[str, str] = {
     "39":             "Aproximación a Redondel",
     "21":             "Doble via",
     "52":"Doble via",
+    "To find over 100k other datasets and pre-trained models- visit https-universe.roboflow.com": "Prohibido Girar en U",
     # "105":                             "Pare",
     # "106":                             "Ceda el Paso",
 
