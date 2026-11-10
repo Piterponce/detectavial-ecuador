@@ -46,6 +46,7 @@ TRADUCTOR: dict[str, str] = {
     "71":                                "Pare",
     # [Agrega aquí tus nuevos IDs numéricos]
     "39":             "Aproximación a Redondel,Ceda el paso",
+    "39":             "Ceda el paso",
     "21":             "Doble via",
     "52":"Doble via",
     "To find over 100k other datasets and pre-trained models- visit https-universe.roboflow.com": "Prohibido Girar en U",
