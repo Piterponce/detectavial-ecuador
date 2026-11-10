@@ -80,7 +80,7 @@ TRADUCTOR: dict[str, str] = {
     "noHonking":                         "Prohibido Tocar Bocina",
     "oneWay":                            "Una Vía",
     "twoWay":                            "Doble Vía",
-    "roundabout":                        "Aproximación a Redondel",
+    "roundabout":                        "Ceda el paso",
     "pedestrianCrossing":                "Cruce Peatonal",
     "prohibitory":                       "Prohibido",
     "speedLimit10":                      "Límite Máximo 10 km/h",
