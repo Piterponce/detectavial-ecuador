@@ -19,6 +19,10 @@ from pathlib import Path
 from collections import Counter
 from PIL import Image
 
+# Nuevas librerías obligatorias para streaming de video continuo en la nube
+from streamlit_webrtc import webrtc_streamer, WebRtcMode, RTCConfiguration
+import av
+
 # ── Importación de Configuración Externa (NO SE MODIFICA config_senales.py) ────
 from config_senales import (
     TRADUCTOR,
@@ -144,7 +148,6 @@ def estimar_distancia(altura_pixel: int) -> float:
     return (ALTURA_REAL_SENAL_M * FOCAL_LENGTH_ESTIMADO) / altura_pixel
 
 def registrar_senal_desconocida(clase_orig: str):
-    """Registra señales no mapeadas en un CSV automáticamente."""
     archivo_registro = "senales_por_agregar.csv"
     if "señales_registradas" not in st.session_state:
         st.session_state.señales_registradas = set()
@@ -198,7 +201,7 @@ def traducir_clase(nombre_clase: str | int, model_names: dict | None = None) -> 
 
 def get_color(nombre_es: str) -> tuple:
     if nombre_es in COLOR_MAP: return COLOR_MAP[nombre_es]
-    return (200, 0, 255) # Fucsia más elegante
+    return (200, 0, 255)
 
 def clasificar_tipo_senal(nombre_es: str) -> dict:
     if "Nueva Señal" in nombre_es or nombre_es.startswith("⚠️"):
@@ -226,7 +229,6 @@ def dibujar_detecciones(imagen_bgr: np.ndarray, results) -> tuple[np.ndarray, li
             nombre_orig = nombres.get(cls_id, str(cls_id)) if nombres else str(cls_id)
             nombre_es = traducir_clase(nombre_orig, model_names=nombres)
             
-            # --- REGISTRO AUTOMÁTICO DE SEÑALES NUEVAS ---
             if "Nueva Señal" in nombre_es:
                 registrar_senal_desconocida(nombre_orig)
 
@@ -316,7 +318,6 @@ with st.sidebar:
     confianza = st.slider("Sensibilidad", 0.10, 0.95, 0.35, 0.05)
     st.markdown('<div class="divider"></div>', unsafe_allow_html=True)
     
-    # --- NUEVO DISEÑO ELEGANTE DEL INDICADOR DEL MODELO ---
     if Path(MODEL_PATH).exists():
         st.markdown("""
         <div style="background: rgba(255,255,255,0.7); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 14px 18px; display: flex; align-items: center; gap: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.02);">
@@ -336,37 +337,37 @@ with st.sidebar:
 modelo = cargar_modelo(MODEL_PATH)
 
 # ══════════════════════════════════════════════════════════════════════════════
-#  MODO 1: CÁMARA EN VIVO (CON DISTANCIA)
+#  MODO 1: CÁMARA EN VIVO (FLUJO CONTINUO WEBRTC)
 # ══════════════════════════════════════════════════════════════════════════════
 if "📹" in modo:
     st.markdown('<div class="glass-card">', unsafe_allow_html=True)
-    st.markdown("### 📹 Radar en Vivo (ADAS)")
-    st.caption("Procesamiento en tiempo real con aproximación de metros hacia la señal.")
-
-    col_t1, col_t2 = st.columns([1.3, 1.7])
-    with col_t1: cam_activa = st.toggle("🔴 Encender Radar", value=False)
-    with col_t2:
-        if cam_activa: st.markdown('<div style="padding-top:0.4rem;"><span class="pulse-dot-red"></span> <b style="color:#ef4444;">DETECTANDO...</b></div>', unsafe_allow_html=True)
+    st.markdown("### 📹 Radar en Vivo Continúo")
+    st.caption("Transmisión en tiempo real. La IA dibujará los cuadros y la distancia directamente sobre el video.")
     st.markdown('</div>', unsafe_allow_html=True)
 
-    if not cam_activa:
-        st.markdown('<div class="camera-box-container" style="text-align:center; padding:3rem;"><h1 style="color:#fff;">📹</h1><h3 style="color:#fff;">En Espera</h3></div>', unsafe_allow_html=True)
-        renderizar_panel_verificacion([])
-    else:
-        foto_radar = st.camera_input("📷 Radar Web: Permitir cámara y escanear")
-        
-        if foto_radar is not None:
-            # Convertir imagen del navegador para OpenCV
-            img_np = np.array(Image.open(foto_radar).convert("RGB"))
-            frame_bgr = cv2.cvtColor(img_np, cv2.COLOR_RGB2BGR)
-            
-            # Procesar con IA
-            results = modelo.predict(source=frame_bgr, conf=confianza, verbose=False)
-            frame_anotado, dets = dibujar_detecciones(frame_bgr, results)
-            
-            # Mostrar resultado y HUD en pantalla
-            st.image(cv2.cvtColor(frame_anotado, cv2.COLOR_BGR2RGB), use_container_width=True)
-            renderizar_panel_verificacion(dets)
+    class VideoProcessor:
+        def recv(self, frame):
+            img = frame.to_ndarray(format="bgr24")
+            if modelo is not None:
+                results = modelo.predict(source=img, conf=confianza, verbose=False)
+                img_anotada, dets = dibujar_detecciones(img, results)
+            else:
+                img_anotada = img
+            return av.VideoFrame.from_ndarray(img_anotada, format="bgr24")
+
+    # Configuración de red para evitar cortes en la nube
+    rtc_config = RTCConfiguration({"iceServers": [{"urls": ["stun:stun.l.google.com:19302"]}]})
+
+    st.markdown('<div class="camera-box-container">', unsafe_allow_html=True)
+    webrtc_streamer(
+        key="radar-vivo",
+        mode=WebRtcMode.SENDRECV,
+        rtc_configuration=rtc_config,
+        video_processor_factory=VideoProcessor,
+        media_stream_constraints={"video": True, "audio": False},
+        async_processing=True
+    )
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ══════════════════════════════════════════════════════════════════════════════
 #  MODO 2 Y 3: FOTOS Y SUBIDA
